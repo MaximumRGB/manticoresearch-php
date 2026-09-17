@@ -121,6 +121,49 @@ class AlterTest extends \PHPUnit\Framework\TestCase
 		$this->assertEquals(array_keys($expectedResponse), array_keys($response));
 	}
 
+	public function testTableAddColumnWithSingleOption() {
+		$params = [
+			'table' => 'products',
+			'body' => [
+				'operation' => 'add',
+				'column' => [
+					'name' => 'content',
+					'type' => 'text',
+					'options' => 'indexed',
+				],
+			],
+		];
+		$response = static::$client->tables()->alter($params);
+		$this->assertEquals(['total' => 0, 'error' => '', 'warning' => ''], $response);
+
+		$response = static::$client->tables()->describe(['table' => 'products']);
+		$this->assertArrayHasKey('content', $response);
+		$this->assertEquals('field', $response['content']['Type']);
+		$this->assertStringContainsString('indexed', $response['content']['Properties']);
+	}
+
+	public function testTableAddColumnWithMultipleOptions() {
+		$params = [
+			'table' => 'products',
+			'body' => [
+				'operation' => 'add',
+				'column' => [
+					'name' => 'content',
+					'type' => 'text',
+					'options' => ['indexed', 'stored'],
+				],
+			],
+		];
+		$response = static::$client->tables()->alter($params);
+		$this->assertEquals(['total' => 0, 'error' => '', 'warning' => ''], $response);
+
+		$response = static::$client->tables()->describe(['table' => 'products']);
+		$this->assertArrayHasKey('content', $response);
+		$this->assertEquals('field', $response['content']['Type']);
+		$this->assertStringContainsString('indexed', $response['content']['Properties']);
+		$this->assertStringContainsString('stored', $response['content']['Properties']);
+	}
+
 	public function testSetGetTable() {
 		$alter = new Alter();
 		$alter->setTable('testName');

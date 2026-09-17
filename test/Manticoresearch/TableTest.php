@@ -270,6 +270,41 @@ class TableTest extends TestCase
 		$this->assertEquals(['Type' => 'string', 'Properties' => ''], $description['example']);
 	}
 
+	public function testAlterAddWithSingleOption() {
+		$table = $this->getTable();
+		$response = $table->alter('add', 'example', 'string', 'indexed');
+		$this->assertEquals(['total' => 0, 'error' => '', 'warning' => ''], $response);
+
+		$description = $table->describe();
+		$keys = array_keys($description);
+		sort($keys);
+		$this->assertEquals(
+			[
+				'example',
+				'gid',
+				'id',
+				'label',
+				'props',
+				'tags',
+				'title',
+			], $keys
+		);
+
+		$this->assertEquals(['Type' => 'string', 'Properties' => 'indexed'], $description['example']);
+	}
+
+	public function testAlterAddWithMultipleOptions() {
+		$table = $this->getTable();
+		$response = $table->alter('add', 'example', 'text', ['indexed', 'stored']);
+		$this->assertEquals(['total' => 0, 'error' => '', 'warning' => ''], $response);
+
+		$description = $table->describe();
+		$this->assertArrayHasKey('example', $description);
+		$this->assertEquals('text', $description['example']['Type']);
+		$this->assertStringContainsString('indexed', $description['example']['Properties']);
+		$this->assertStringContainsString('stored', $description['example']['Properties']);
+	}
+
 	public function testAlterInvalidOperation() {
 		$table = $this->getTable();
 		$this->expectException(RuntimeException::class);
