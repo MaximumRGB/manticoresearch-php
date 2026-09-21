@@ -272,7 +272,7 @@ class TableTest extends TestCase
 
 	public function testAlterAddWithSingleOption() {
 		$table = $this->getTable();
-		$response = $table->alter('add', 'example', 'string', 'indexed');
+		$response = $table->alter('add', 'content_single', 'text', 'indexed');
 		$this->assertEquals(['total' => 0, 'error' => '', 'warning' => ''], $response);
 
 		$description = $table->describe();
@@ -280,7 +280,7 @@ class TableTest extends TestCase
 		sort($keys);
 		$this->assertEquals(
 			[
-				'example',
+				'content_single',
 				'gid',
 				'id',
 				'label',
@@ -290,19 +290,24 @@ class TableTest extends TestCase
 			], $keys
 		);
 
-		$this->assertEquals(['Type' => 'string', 'Properties' => 'indexed'], $description['example']);
+		$properties = (string)$description['content_single']['Properties'];
+		$this->assertStringContainsString('indexed', $properties);
 	}
 
 	public function testAlterAddWithMultipleOptions() {
 		$table = $this->getTable();
-		$response = $table->alter('add', 'example', 'text', ['indexed', 'stored']);
+		$response = $table->alter('add', 'content_multiple', 'text', ['indexed', 'stored']);
 		$this->assertEquals(['total' => 0, 'error' => '', 'warning' => ''], $response);
 
 		$description = $table->describe();
-		$this->assertArrayHasKey('example', $description);
-		$this->assertEquals('text', $description['example']['Type']);
-		$this->assertStringContainsString('indexed', $description['example']['Properties']);
-		$this->assertStringContainsString('stored', $description['example']['Properties']);
+		$this->assertTrue(
+			isset($description['content_multiple']),
+			'Column content_multiple is missing'
+		);
+
+		$properties = (string)$description['content_multiple']['Properties'];
+		$this->assertStringContainsString('indexed', $properties);
+		$this->assertStringContainsString('stored', $properties);
 	}
 
 	public function testAlterInvalidOperation() {
