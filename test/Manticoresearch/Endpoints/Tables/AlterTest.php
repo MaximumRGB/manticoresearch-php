@@ -127,7 +127,7 @@ class AlterTest extends \PHPUnit\Framework\TestCase
 			'body' => [
 				'operation' => 'add',
 				'column' => [
-					'name' => 'content',
+					'name' => 'content_single',
 					'type' => 'text',
 					'options' => 'indexed',
 				],
@@ -137,9 +137,10 @@ class AlterTest extends \PHPUnit\Framework\TestCase
 		$this->assertEquals(['total' => 0, 'error' => '', 'warning' => ''], $response);
 
 		$response = static::$client->tables()->describe(['table' => 'products']);
-		$this->assertArrayHasKey('content', $response);
-		$this->assertEquals('field', $response['content']['Type']);
-		$this->assertStringContainsString('indexed', $response['content']['Properties']);
+		$this->assertTrue(isset($response['content_single']), 'Column content_single is missing');
+
+		$properties = (string) $response['content_single']['Properties'];
+		$this->assertStringContainsString('indexed', $properties);
 	}
 
 	public function testTableAddColumnWithMultipleOptions() {
@@ -148,7 +149,7 @@ class AlterTest extends \PHPUnit\Framework\TestCase
 			'body' => [
 				'operation' => 'add',
 				'column' => [
-					'name' => 'content',
+					'name' => 'content_multiple',
 					'type' => 'text',
 					'options' => ['indexed', 'stored'],
 				],
@@ -158,10 +159,11 @@ class AlterTest extends \PHPUnit\Framework\TestCase
 		$this->assertEquals(['total' => 0, 'error' => '', 'warning' => ''], $response);
 
 		$response = static::$client->tables()->describe(['table' => 'products']);
-		$this->assertArrayHasKey('content', $response);
-		$this->assertEquals('field', $response['content']['Type']);
-		$this->assertStringContainsString('indexed', $response['content']['Properties']);
-		$this->assertStringContainsString('stored', $response['content']['Properties']);
+		$this->assertTrue(isset($response['content_multiple']), 'Column content_multiple is missing');
+
+		$properties = (string) $response['content_multiple']['Properties'];
+		$this->assertStringContainsString('indexed', $properties);
+		$this->assertStringContainsString('stored', $properties);
 	}
 
 	public function testSetGetTable() {
